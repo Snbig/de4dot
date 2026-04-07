@@ -16,7 +16,7 @@ jobs:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '6.0.x' # Use .NET 6 LTS for best compatibility with legacy code
+          dotnet-version: '6.0.x'
 
       - name: Find Project File
         id: find_proj
@@ -36,10 +36,11 @@ jobs:
             -p:LangVersion=10.0 `
             -p:CheckEolTargetFramework=false
 
-      - name: Publish Self-Contained (win-x64)
+      - name: Publish Self-Contained (win-x64, netcoreapp3.1)
         run: |
           dotnet publish ${{ steps.find_proj.outputs.project_path }} `
             -c Release `
+            -f netcoreapp3.1 `
             -r win-x64 `
             --self-contained true `
             -p:PublishSingleFile=true `
