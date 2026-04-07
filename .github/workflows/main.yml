@@ -16,7 +16,7 @@ jobs:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '6.0.x' # de4dot targets .NET 6/7; use 6.0 for max compatibility
+          dotnet-version: '6.0.x' # Use .NET 6 LTS for best compatibility with legacy code
 
       - name: Find Project File
         id: find_proj
@@ -28,8 +28,13 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore ${{ steps.find_proj.outputs.project_path }}
 
-      - name: Build Release
-        run: dotnet build ${{ steps.find_proj.outputs.project_path }} -c Release --no-restore
+      - name: Build Release (Force C# 10)
+        run: |
+          dotnet build ${{ steps.find_proj.outputs.project_path }} `
+            -c Release `
+            --no-restore `
+            -p:LangVersion=10.0 `
+            -p:CheckEolTargetFramework=false
 
       - name: Publish Self-Contained (win-x64)
         run: |
@@ -39,6 +44,8 @@ jobs:
             --self-contained true `
             -p:PublishSingleFile=true `
             -p:EnableCompressionInSingleFile=true `
+            -p:LangVersion=10.0 `
+            -p:CheckEolTargetFramework=false `
             -o ./publish
 
       - name: Upload Artifact
