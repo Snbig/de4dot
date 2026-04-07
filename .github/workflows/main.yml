@@ -1,0 +1,40 @@
+name: Build de4dot (Windows Server 2022)
+
+on:
+  workflow_dispatch: # Allows manual trigger
+  push:
+    branches: [ "master" ]
+
+jobs:
+  build-windows:
+    runs-on: windows-2022 # Uses Windows Server 2022
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x' # de4dot builds fine on .NET 8; adjust if needed
+
+      - name: Restore dependencies
+        run: dotnet restore de4dot.sln
+
+      - name: Build Release (AnyCPU)
+        run: dotnet build de4dot.sln -c Release --no-restore -p:Platform="Any CPU"
+
+      - name: Publish Self-Contained (Optional, ensures no .NET runtime needed)
+        run: |
+          dotnet publish de4dot/de4dot.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish
+        # Note: If you prefer framework-dependent (smaller), remove --self-contained and -r win-x64
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: de4dot-windows-2022
+          path: |
+            ./publish/*.exe
+            ./publish/*.dll
+            ./publish/*.config
+          retention-days: 30
